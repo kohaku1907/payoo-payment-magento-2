@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+ /************************************************************
+ * *
+ *  * Copyright © Kohaku1907. All rights reserved.
+ *  * See COPYING.txt for license details.
+ *  *
+ *  * @author    nguyenmtri11@gmail.com
+ * *  @project   Payoo Payment
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="standard">
+        <route id="payoo" frontName="payoo">
+            <module name="Kohaku1907_PayooPayment" />
+        </route>
+    </router>
+</config>

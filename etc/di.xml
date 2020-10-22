@@ -1,0 +1,171 @@
+<?xml version="1.0"?>
+<!--
+ /************************************************************
+ * *
+ *  * Copyright © Kohaku1907. All rights reserved.
+ *  * See COPYING.txt for license details.
+ *  *
+ *  * @author    nguyenmtri11@gmail.com
+ * *  @project   Payoo Payment
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <virtualType name="PayooConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="string">payoo</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayooLogger" type="Magento\Payment\Model\Method\Logger">
+        <arguments>
+            <argument name="config" xsi:type="object">PayooConfig</argument>
+        </arguments>
+    </virtualType>
+    <type name="Kohaku1907\PayooPayment\Gateway\Helper\Authorization">
+        <arguments>
+            <argument name="config" xsi:type="object">PayooConfig</argument>
+        </arguments>
+    </type>
+    <virtualType name="PayooTransferFactory" type="Kohaku1907\PayooPayment\Gateway\Http\TransferFactory">
+        <arguments>
+            <argument name="config" xsi:type="object">PayooConfig</argument>
+            <argument name="urlPath" xsi:type="const">Kohaku1907\PayooPayment\Gateway\Request\AbstractDataBuilder::PAY_URL_PATH</argument>
+        </arguments>
+    </virtualType>
+    <type name="Kohaku1907\PayooPayment\Block\Info">
+        <arguments>
+            <argument name="config" xsi:type="object">PayooConfig</argument>
+        </arguments>
+    </type>
+    <virtualType name="PayooFacade" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="string">payoo</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Kohaku1907\PayooPayment\Block\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">PayooValueHandlerPool</argument>
+            <argument name="validatorPool" xsi:type="object">PayooValidatorPool</argument>
+            <argument name="commandPool" xsi:type="object">PayooCommandPool</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayooValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">PayooDefaultValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayooDefaultValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PayooConfig</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayooValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">PayooCountryValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayooCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">PayooConfig</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayooZendHttpClient" type="Kohaku1907\PayooPayment\Gateway\Http\Client\Zend">
+        <arguments>
+            <argument name="logger" xsi:type="object">PayooLogger</argument>
+            <argument name="converter" xsi:type="object">Kohaku1907\PayooPayment\Gateway\Http\Converter\JsonToArray</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayooCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="initialize" xsi:type="string">Kohaku1907\PayooPayment\Gateway\Command\InitializeCommand</item>
+                <item name="get_pay_url" xsi:type="string">Kohaku1907\PayooPayment\Gateway\Command\GetPayUrlCommand</item>
+                <item name="capture" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
+                <item name="ipn" xsi:type="string">Kohaku1907\PayooPayment\Gateway\Command\CompleteIpnCommand</item>
+                <item name="complete" xsi:type="string">Kohaku1907\PayooPayment\Gateway\Command\CompleteCommand</item>
+                <item name="cancel_order" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
+                <item name="refund" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Kohaku1907\PayooPayment\Gateway\Command\GetPayUrlCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">PayooPayUrlDataBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">PayooTransferFactory</argument>
+            <argument name="client" xsi:type="object">PayooZendHttpClient</argument>
+            <argument name="validator" xsi:type="object">Kohaku1907\PayooPayment\Gateway\Validator\GetPayUrlValidator</argument>
+        </arguments>
+    </type>
+    <virtualType name="PayooPayUrlDataBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="order_details" xsi:type="string">Kohaku1907\PayooPayment\Gateway\Request\OrderDetailsDataBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GetPayUrlTransactionDataBuilder" type="Kohaku1907\PayooPayment\Gateway\Request\TransactionDataBuilder">
+        <arguments>
+            <argument name="requestType" xsi:type="const">Kohaku1907\PayooPayment\Gateway\Request\AbstractDataBuilder::PAY_URL_TYPE</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Kohaku1907\PayooPayment\Gateway\Command\UpdateDetailsCommand">
+        <arguments>
+            <argument name="validator" xsi:type="object">Kohaku1907\PayooPayment\Gateway\Validator\CompleteValidator</argument>
+            <argument name="handler" xsi:type="object">Kohaku1907\PayooPayment\Gateway\Response\TransactionCompleteHandler</argument>
+        </arguments>
+    </type>
+    <type name="Kohaku1907\PayooPayment\Gateway\Command\UpdateIpnDetailsCommand">
+        <arguments>
+            <argument name="validator" xsi:type="object">Kohaku1907\PayooPayment\Gateway\Validator\CompleteIpnValidator</argument>
+            <argument name="handler" xsi:type="object">Kohaku1907\PayooPayment\Gateway\Response\TransactionCompleteHandler</argument>
+        </arguments>
+    </type>
+    <type name="Kohaku1907\PayooPayment\Gateway\Command\UpdateOrderCommand">
+        <arguments>
+            <argument name="config" xsi:type="object">PayooConfig</argument>
+        </arguments>
+    </type>
+    <type name="Kohaku1907\PayooPayment\Gateway\Request\OrderDetailsDataBuilder">
+        <arguments>
+            <argument name="config" xsi:type="object">PayooConfig</argument>
+        </arguments>
+    </type>
+    <virtualType name="PayooRefundGatewayCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">PayooRefundDataBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">PayooTransferFactory</argument>
+            <argument name="client" xsi:type="object">PayooZendHttpClient</argument>
+            <argument name="handler" xsi:type="object">PayooRefundResponseHandler</argument>
+            <argument name="validator" xsi:type="object">Kohaku1907\PayooPayment\Gateway\Validator\RefundValidator</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayooRefundDataBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="transaction_type" xsi:type="string">RefundTransactionDataBuilder</item>
+                <item name="refund_data" xsi:type="string">Kohaku1907\PayooPayment\Gateway\Request\RefundDataBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="RefundTransactionDataBuilder" type="Kohaku1907\PayooPayment\Gateway\Request\TransactionDataBuilder">
+        <arguments>
+            <argument name="requestType" xsi:type="const">Kohaku1907\PayooPayment\Gateway\Request\AbstractDataBuilder::REFUND_TYPE</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayooRefundResponseHandler" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="refund" xsi:type="string">Kohaku1907\PayooPayment\Gateway\Response\TransactionRefundHandler</item>
+                <item name="response_messages" xsi:type="string">Kohaku1907\PayooPayment\Gateway\Response\ResponseMessagesHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Kohaku1907\PayooPayment\Gateway\Request\RefundDataBuilder">
+        <arguments>
+            <argument name="config" xsi:type="object">PayooConfig</argument>
+        </arguments>
+    </type>
+</config>
