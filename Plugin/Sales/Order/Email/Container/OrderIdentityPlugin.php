@@ -36,8 +36,6 @@ class OrderIdentityPlugin
                 $returnValue = false;
             else
                 $returnValue = true;
-
-            $this->checkoutSession->unsForceOrderMailSentOnSuccess();
         }
 
         return $returnValue;

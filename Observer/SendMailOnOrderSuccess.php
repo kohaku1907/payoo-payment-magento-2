@@ -46,6 +46,7 @@ class SendMailOnOrderSuccess implements ObserverInterface
             $this->checkoutSession->setForceOrderMailSentOnSuccess(true);
             $order = $this->orderModel->create()->load($orderIds[0]);
             $this->orderSender->send($order, true);
+            $this->checkoutSession->unsForceOrderMailSentOnSuccess();
         }
     }
 }
