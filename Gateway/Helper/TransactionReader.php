@@ -72,13 +72,13 @@ class TransactionReader
     }
 
     public static function readIpnResponse($xmlData) {
-        $doc = new \DOMDocument();
-        $doc->loadXML($xmlData);
+            $doc = new \DOMDocument();
+            $doc->loadXML($xmlData);
 
-        $notifyData = ($doc->getElementsByTagName("Data")->item(0)->nodeValue);
-        $signature = ($doc->getElementsByTagName("Signature")->item(0)->nodeValue);
-        $payooSessionID = $doc->getElementsByTagName("PayooSessionID")->item(0);
-        $keyFields = $doc->getElementsByTagName("KeyFields")->item(0)->nodeValue;
+            $notifyData = ($doc->getElementsByTagName("Data")->item(0)->nodeValue);
+            $signature = ($doc->getElementsByTagName("Signature")->item(0)->nodeValue);
+            $payooSessionID = $doc->getElementsByTagName("PayooSessionID")->item(0);
+        //$keyFields = $doc->getElementsByTagName("KeyFields")->item(0)->nodeValue;
 
         if(trim($notifyData) == "")
         {
@@ -132,7 +132,7 @@ class TransactionReader
             'invoice' => $invoice,
             'signature' => $signature,
             'payooSessionID' => $payooSessionID,
-            'keyFields' => $keyFields
+            //'keyFields' => $keyFields
         ];
     }
 
