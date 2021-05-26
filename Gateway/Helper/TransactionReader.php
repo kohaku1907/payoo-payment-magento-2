@@ -85,7 +85,7 @@ class TransactionReader
             return false;
         }
 
-        $doc = new DOMDocument();
+        $doc = new \DOMDocument();
         $dataValue = base64_decode($notifyData);
         $doc->loadXML($dataValue);
 
