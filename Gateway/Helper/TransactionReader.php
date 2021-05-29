@@ -78,7 +78,7 @@ class TransactionReader
             $notifyData = ($doc->getElementsByTagName("Data")->item(0)->nodeValue);
             $signature = ($doc->getElementsByTagName("Signature")->item(0)->nodeValue);
             $payooSessionID = $doc->getElementsByTagName("PayooSessionID")->item(0);
-        //$keyFields = $doc->getElementsByTagName("KeyFields")->item(0)->nodeValue;
+            $keyFields = $doc->getElementsByTagName("KeyFields")->item(0)->nodeValue;
 
         if(trim($notifyData) == "")
         {
@@ -130,9 +130,9 @@ class TransactionReader
         }
         return [
             'invoice' => $invoice,
-            'signature' => $signature,
+            'checksum' => $signature,
             'payooSessionID' => $payooSessionID,
-            //'keyFields' => $keyFields
+            'keyFields' => $keyFields
         ];
     }
 

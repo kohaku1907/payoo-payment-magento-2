@@ -62,7 +62,7 @@ class RefundValidator extends AbstractResponseValidator
     /**
      * @inheritDoc
      */
-    protected function getSignatureArray()
+    protected function getSignatureArray($response)
     {
         return [
             AbstractDataBuilder::PARTNER_CODE,

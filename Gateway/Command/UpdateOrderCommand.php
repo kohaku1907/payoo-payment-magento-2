@@ -10,7 +10,6 @@
 namespace Kohaku1907\PayooPayment\Gateway\Command;
 
 use Kohaku1907\PayooPayment\Gateway\Helper\TransactionReader;
-use Kohaku1907\PayooPayment\Gateway\Validator\AbstractResponseValidator;
 use Kohaku1907\PayooPayment\Model\PaymentNotification;
 use Magento\Payment\Gateway\Command;
 use Magento\Sales\Model\Order;

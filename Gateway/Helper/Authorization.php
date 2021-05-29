@@ -80,9 +80,18 @@ class Authorization
      * @param $params
      * @return string
      */
-    public function getSignature($params)
+    public function getSignature($params, $delimiter = '', $ltrim = false)
     {
-        return hash('sha512',$this->getSecretKey() .$params['session'].'.'.$params['order_no'].'.'.$params['status']);
+        $str = '';
+        foreach ($params as $param) {
+            $str .= $delimiter . $param;
+        }
+
+        if($ltrim) {
+            $str = ltrim($str, $delimiter);
+        }
+        return hash('sha512',$this->getSecretKey() . $str);
+        //return hash('sha512',$this->getSecretKey() .$params['session'].'.'.$params['order_no'].'.'.$params['status']);
     }
 
     /**

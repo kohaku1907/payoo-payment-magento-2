@@ -39,7 +39,7 @@ class CompleteValidator extends AbstractResponseValidator
         $validationResult = $this->validateTotalAmount($response, $amount)
             && $this->validateTransactionId($response)
             && $this->validateErrorCode($response)
-            && $this->validateSignature($response);
+            && $this->validateSignature($response, '.', true);
 
         if (!$validationResult) {
             $errorMessages = [__('Transaction has been declined. Please try again later.')];
@@ -64,7 +64,7 @@ class CompleteValidator extends AbstractResponseValidator
     /**
      * @inheritDoc
      */
-    protected function getSignatureArray()
+    protected function getSignatureArray($response)
     {
         return [
             self::TRANSACTION_ID,

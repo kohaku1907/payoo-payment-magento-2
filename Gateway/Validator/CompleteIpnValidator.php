@@ -9,8 +9,6 @@
  */
 namespace Kohaku1907\PayooPayment\Gateway\Validator;
 
-use Kohaku1907\PayooPayment\Gateway\Helper\Rate;
-use Kohaku1907\PayooPayment\Gateway\Request\AbstractDataBuilder;
 use Kohaku1907\PayooPayment\Model\PaymentNotification;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
@@ -38,7 +36,7 @@ class CompleteIpnValidator extends AbstractResponseValidator
         $errorMessages = [];
 
         $validationResult = $this->validateTotalAmount($response, $amount)
-            && $this->validateSignature($response);
+            && $this->validateSignature($response, '|');
 
         if (!$validationResult) {
             $errorMessages = [__('Transaction has been declined. Please try again later.')];
@@ -60,36 +58,12 @@ class CompleteIpnValidator extends AbstractResponseValidator
             && (string)($response['invoice']->getOrderCashAmount()) === (string)$amount;
     }
 
-    protected function validateSignature(array $response)
-    {
-        /** @var PaymentNotification $invoice */
-        $dataResponse = $response['invoice'];
-        $checksum = $response['signature'];
-        $keyFields = $response['keyFields'];
-        $strData = $this->config->getValue('secret_key');
-
-        unset($dataResponse->DigitalSignature);
-
-        if(!empty($keyFields))
-        {
-            $arr_Keys = explode('|', $keyFields);
-            for ($i = 0; $i < count($arr_Keys); $i++)
-            {
-                $strData .= '|' . $dataResponse->{$arr_Keys[$i]};
-            }
-        }
-        if(strtoupper(hash('sha512',$strData))!= strtoupper($checksum))
-        {
-            return FALSE;
-        }
-        return TRUE;
-    }
-
     /**
      * @inheritDoc
      */
-    protected function getSignatureArray()
+    protected function getSignatureArray($response)
     {
-        // TODO: Implement getSignatureArray() method.
+        $keyFields = $response['keyFields'];
+        return explode('|', $keyFields);
     }
 }

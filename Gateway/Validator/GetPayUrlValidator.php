@@ -42,9 +42,10 @@ class GetPayUrlValidator extends AbstractResponseValidator
     }
 
     /**
+     * @param $response
      * @return array
      */
-    protected function getSignatureArray()
+    protected function getSignatureArray($response)
     {
         return [
             AbstractDataBuilder::REQUEST_ID,

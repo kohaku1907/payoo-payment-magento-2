@@ -24,8 +24,8 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Sales\Model\OrderFactory;
+use Magento\Sales\Model\OrderNotifier;
 use Magento\Framework\App\CsrfAwareActionInterface;
-use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 
 /**
  * Class Ipn
@@ -64,9 +64,9 @@ class Ipn extends AppAction implements CsrfAwareActionInterface
     private $orderFactory;
 
     /**
-     * @var OrderSender
+     * @var OrderNotifier
      */
-    private $orderSender;
+    private $orderNotifier;
 
     /**
      * @var \Psr\Log\LoggerInterface
@@ -83,7 +83,7 @@ class Ipn extends AppAction implements CsrfAwareActionInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param OrderFactory             $orderFactory
      * @param CommandPoolInterface     $commandPool
-     * @param OrderSender              $orderSender
+     * @param OrderNotifier              $orderNotifier
      */
     public function __construct(
         Context $context,
@@ -93,7 +93,7 @@ class Ipn extends AppAction implements CsrfAwareActionInterface
         OrderRepositoryInterface $orderRepository,
         OrderFactory $orderFactory,
         CommandPoolInterface $commandPool,
-        OrderSender $orderSender,
+        OrderNotifier $orderNotifier,
         \Psr\Log\LoggerInterface $logger
     ) {
         parent::__construct($context);
@@ -103,7 +103,7 @@ class Ipn extends AppAction implements CsrfAwareActionInterface
         $this->method                   = $method;
         $this->paymentDataObjectFactory = $paymentDataObjectFactory;
         $this->orderFactory             = $orderFactory;
-        $this->orderSender              = $orderSender;
+        $this->orderNotifier            = $orderNotifier;
         $this->_logger                  = $logger;
     }
 
@@ -120,13 +120,11 @@ class Ipn extends AppAction implements CsrfAwareActionInterface
             $invoice = $paymentData['invoice'];
 
             $orderIncrementId = $invoice->getOrderNo();
-            $this->_logger->debug('Order no:' . $orderIncrementId);
-
-            $order            = $this->orderFactory->create()->loadByIncrementId($orderIncrementId);
+            $orderModel = $this->orderFactory->create();
+            $order = $orderModel->loadByIncrementId($orderIncrementId);
             $payment          = $order->getPayment();
 
-            $this->_logger->debug('Payment method: '. $payment->getMethod());
-            $this->_logger->debug('Method method: '. $this->method->getCode());
+
             ContextHelper::assertOrderPayment($payment);
             if ($payment->getMethod() === $this->method->getCode()) {
                 $paymentDataObject = $this->paymentDataObjectFactory->create($payment);
@@ -139,14 +137,14 @@ class Ipn extends AppAction implements CsrfAwareActionInterface
                     ]
                 );
                 $this->_logger->debug('Send Email here');
-                $this->orderSender->send($order);
+                $this->orderNotifier->notify($order);
                 echo 'NOTIFY_RECEIVED';
                 return;
             }
-            $this->_logger->debug('Fail to send email');
         } catch (\Exception $e) {
             $this->_objectManager->get('\Psr\Log\LoggerInterface')->critical($e->getMessage());
             $this->messageManager->addErrorMessage(__('Transaction has been declined. Please try again later.'));
+            $this->_logger->debug('Payment Debug: ' .$e->getMessage());
             echo 'Verified is faillure.';
             return;
         }

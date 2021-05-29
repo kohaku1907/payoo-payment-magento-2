@@ -12,8 +12,10 @@ namespace Kohaku1907\PayooPayment\Gateway\Validator;
 use Kohaku1907\PayooPayment\Gateway\Helper\Authorization;
 use Kohaku1907\PayooPayment\Gateway\Helper\Rate;
 use Kohaku1907\PayooPayment\Gateway\Request\AbstractDataBuilder;
+use Kohaku1907\PayooPayment\Model\PaymentNotification;
 use Magento\Payment\Gateway\Validator\AbstractValidator;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
+use Magento\Payment\Gateway\ConfigInterface;
 
 /**
  * Class AbstractResponseValidator
@@ -103,6 +105,7 @@ abstract class AbstractResponseValidator extends AbstractValidator
      */
     protected $authorization;
 
+
     /**
      * AbstractResponseValidator constructor.
      *
@@ -121,9 +124,10 @@ abstract class AbstractResponseValidator extends AbstractValidator
     }
 
     /**
+     * @param $response
      * @return array
      */
-    abstract protected function getSignatureArray();
+    abstract protected function getSignatureArray($response);
 
     /**
      * @param array $response
@@ -148,22 +152,36 @@ abstract class AbstractResponseValidator extends AbstractValidator
      * Validate Signature
      *
      * @param array $response
+     * @param string $delimiter
+     * @param bool $ltrim
      * @return boolean
      */
-    protected function validateSignature(array $response)
+    protected function validateSignature($response, $delimiter = '', $ltrim = false)
     {
         $newParams = [];
-        foreach ($this->getSignatureArray() as $param) {
-            if (isset($response[$param])) {
-                $newParams[$param] = $response[$param];
+        if(isset($response['invoice'])) {
+            foreach ($this->getSignatureArray($response) as $param) {
+                /** @var PaymentNotification $data */
+                $data = $response['invoice'];
+                if (method_exists($data,'get'.$param)) {
+                    $newParams[$param] = $data->{'get'. $param}();
+                }
+            }
+        } else {
+            foreach ($this->getSignatureArray($response) as $param) {
+                if (isset($response[$param])) {
+                    $newParams[$param] = $response[$param];
+                }
             }
         }
-        $signature = $this->authorization->getSignature($newParams);
+
+        $signature = $this->authorization->getSignature($newParams, $delimiter, $ltrim);
         if (!empty($response[AbstractDataBuilder::SIGNATURE])
-            && $response[AbstractDataBuilder::SIGNATURE] === $signature) {
+            && strtoupper($response[AbstractDataBuilder::SIGNATURE]) === strtoupper($signature)) {
             return  true;
         }
 
         return false;
     }
+
 }

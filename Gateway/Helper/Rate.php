@@ -14,7 +14,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Payment\Gateway\ConfigInterface;
-use Kohaku1907\PayooPayment\Gateway\Request\AbstractDataBuilder;
 use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -43,7 +42,6 @@ class Rate
     /**
      * OrderDetailsDataBuilder constructor.
      *
-     * @param ConfigInterface       $config
      * @param Data                  $helperData
      * @param StoreManagerInterface $storeManager
      */
